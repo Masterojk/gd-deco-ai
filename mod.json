@@ -1,0 +1,68 @@
+{
+	"geode": "5.11.2",
+	"gd": {
+		"win": "2.2081",
+		"android": "2.2081",
+		"mac": "2.2081",
+		"ios": "2.2081"
+	},
+	"id": "neuraldev.deco-ai",
+	"name": "Deco AI",
+	"version": "v1.0.0",
+	"developer": "NeuralDev",
+	"description": "Describe a vibe and Claude decorates your level or builds a rough layout, right in the editor",
+	"tags": [
+		"editor",
+		"enhancement"
+	],
+	"settings": {
+		"claude-title": {
+			"type": "title",
+			"name": "Claude",
+			"description": "Deco AI asks Claude for a deco plan. You need your own Anthropic API key (console.anthropic.com). Presets work without a key."
+		},
+		"api-key": {
+			"type": "string",
+			"name": "Anthropic API key",
+			"description": "Starts with sk-ant-. Stored only on this PC and only sent to api.anthropic.com.",
+			"default": ""
+		},
+		"model": {
+			"type": "string",
+			"name": "Claude model",
+			"description": "claude-sonnet-5-5 is fast and cheap. claude-opus-5-5 plans better deco but costs more.",
+			"default": "claude-sonnet-5-5"
+		},
+		"deco-title": {
+			"type": "title",
+			"name": "Deco"
+		},
+		"max-objects": {
+			"type": "int",
+			"name": "Max objects per run",
+			"description": "Deco AI thins out background and particles to stay under this.",
+			"default": 9000,
+			"min": 500,
+			"max": 60000
+		},
+		"first-channel": {
+			"type": "int",
+			"name": "First colour channel",
+			"description": "Deco AI uses 11 colour channels starting here (skips any your level already uses).",
+			"default": 960,
+			"min": 100,
+			"max": 980
+		},
+		"first-editor-layer": {
+			"type": "int",
+			"name": "Editor layer for deco",
+			"description": "Deco goes on this editor layer so you can hide it while editing gameplay. 0 = normal layer.",
+			"default": 0,
+			"min": 0,
+			"max": 999
+		}
+	},
+	"dependencies": {
+		"geode.node-ids": ">=v1.20.0"
+	}
+}
