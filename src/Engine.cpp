@@ -155,7 +155,13 @@ static std::string saveKey(std::string const& save, int key) {
     return "";
 }
 
-static void markCells(std::unordered_set<int64_t>& set, CCRect const& r, int* maxCy = nullptr) {
+// Positions read from objects in the editor are 90 units (3 blocks) higher than
+// the save format that createObjectsFromString uses, so shift them down.
+static constexpr float EDITOR_Y_OFFSET = 90.f;
+
+static void markCells(std::unordered_set<int64_t>& set, CCRect rect, int* maxCy = nullptr) {
+    CCRect r = rect;
+    r.origin.y -= EDITOR_Y_OFFSET;
     int cx0 = int(std::floor((r.getMinX() + 1.f) / B));
     int cx1 = int(std::floor((r.getMaxX() - 1.f) / B));
     int cy0 = int(std::floor((r.getMinY() + 1.f) / B));
