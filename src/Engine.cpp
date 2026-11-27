@@ -36,8 +36,8 @@ using namespace geode::prelude;
 namespace deco {
 
 static constexpr float B = 30.f;       // one block
-static constexpr float GROUND = 90.f;  // top of the ground in editor units
-static constexpr int GROUND_CY = 3;    // first cell row above the ground
+static constexpr float GROUND = 0.f;   // top of the ground in level units
+static constexpr int GROUND_CY = 0;    // first cell row above the ground
 static constexpr int MAX_RUN = 8;      // longest merged bar, in blocks (long objects get culled)
 
 // Z layers as GD stores them
@@ -1081,7 +1081,7 @@ Result<ApplyResult> applyLayout(LayoutPlan const& plan, unsigned seed) {
         float t = (d - 1) / 9.f;
         int end = cx + seg.length;
         if (seg.mode != current) {
-            obj(portalFor(seg.mode), cx, seg.mode == GameMode::Cube ? 4 : 7);
+            obj(portalFor(seg.mode), cx, seg.mode == GameMode::Cube ? GROUND_CY + 1 : GROUND_CY + 4);
             current = seg.mode;
             cx += 3;
         }
@@ -1130,13 +1130,13 @@ Result<ApplyResult> applyLayout(LayoutPlan const& plan, unsigned seed) {
             int gap = seg.mode == GameMode::Wave ? int(std::round(5 - 2 * t)) : seg.mode == GameMode::Ufo ? int(std::round(8 - 3 * t))
                                                                                                          : int(std::round(7 - 3 * t));
             int changeEvery = seg.mode == GameMode::Wave ? 1 : 3;
-            int floorY = 6 - gap / 2;
+            int floorY = GROUND_CY + 3 - gap / 2;
             floorY = std::max(GROUND_CY, floorY);
             int prevFloor = floorY, prevCeil = floorY + gap + 1;
             for (int x = cx; x < end; x++) {
                 if ((x - cx) % changeEvery == 0 && x > cx + 2) {
                     int dir = int(rnd(0.f, 3.f)) - 1;
-                    floorY = std::clamp(floorY + dir, GROUND_CY, 12 - gap - 1);
+                    floorY = std::clamp(floorY + dir, GROUND_CY, GROUND_CY + 9 - gap - 1);
                 }
                 int ceilY = floorY + gap + 1;
                 for (int y = std::min(floorY, prevFloor); y <= std::max(floorY, prevFloor); y++) block(x, y);
@@ -1152,7 +1152,7 @@ Result<ApplyResult> applyLayout(LayoutPlan const& plan, unsigned seed) {
         }
     }
     if (current != GameMode::Cube) {
-        obj(12, cx, 7);
+        obj(12, cx, GROUND_CY + 4);
         cx += 2;
     }
     return commit(ed, b, marker, "Built a layout with");

@@ -235,7 +235,7 @@ protected:
         float step = (W - 30.f) / float(presets.size());
         for (size_t i = 0; i < presets.size(); i++) {
             auto id = presets[i].first;
-            button(presets[i].second, m_preset == id ? "GJ_button_01.png" : "GJ_button_04.png", 0.36f,
+            button(presets[i].second, m_preset == id ? "GJ_button_01.png" : "GJ_button_04.png", 0.3f,
                    {15.f + step * (i + 0.5f), y}, [this, id](auto) {
                        m_preset = id;
                        rebuild();
