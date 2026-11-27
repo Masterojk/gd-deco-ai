@@ -899,6 +899,42 @@ static void placeMotifs(Ctx& c) {
     }
 }
 
+// Full-size solid blocks under a deco overlay are hidden (they still collide),
+// because GD draws them over the overlay otherwise. Returns the cells an object covers.
+static std::vector<int64_t> cellsOf(GameObject* obj) {
+    std::unordered_set<int64_t> set;
+    markCells(set, obj->getObjectRect());
+    return {set.begin(), set.end()};
+}
+
+static int hideCoveredBlocks(LevelEditorLayer* ed, Scan const& s) {
+    int hidden = 0;
+    for (auto obj : CCArrayExt<GameObject*>(ed->m_objects)) {
+        if (!obj || obj->m_isNoTouch || obj->m_isHide || obj->m_objectType != GameObjectType::Solid) continue;
+        auto const& r = obj->getObjectRect();
+        if (r.size.width < 25.f || r.size.height < 25.f) continue; // half blocks etc. keep their own look
+        float x = obj->getPositionX();
+        if (x < s.x0 - B || x > s.x1 + B) continue;
+        auto cells = cellsOf(obj);
+        if (cells.empty()) continue;
+        obj->m_isHide = true;
+        hidden++;
+    }
+    return hidden;
+}
+
+static void unhideUnder(LevelEditorLayer* ed, std::unordered_set<int64_t> const& cells) {
+    if (cells.empty()) return;
+    for (auto obj : CCArrayExt<GameObject*>(ed->m_objects)) {
+        if (!obj || !obj->m_isHide || obj->m_objectType != GameObjectType::Solid) continue;
+        for (auto k : cellsOf(obj))
+            if (cells.contains(k)) {
+                obj->m_isHide = false;
+                break;
+            }
+    }
+}
+
 // ---------------------------------------------------------------- undo
 
 static std::vector<Ref<GameObject>> s_last;
@@ -954,7 +990,14 @@ int undoLast() {
                 break;
             }
     }
+    // blocks that were hidden under the removed overlays become visible again
+    std::unordered_set<int64_t> covered;
+    int square = catalog().square;
+    for (auto& obj : doomed)
+        if (obj->m_objectID == square)
+            for (auto k : cellsOf(obj)) covered.insert(k);
     for (auto& obj : doomed) ed->removeObject(obj, true);
+    unhideUnder(ed, covered);
     s_last.clear();
     if (ed->m_editorUI) ed->m_editorUI->updateButtons();
     return int(doomed.size());
@@ -1031,7 +1074,9 @@ Result<ApplyResult> applyDeco(DecoPlan const& plan, DecoOptions const& opt, bool
 
         if (b.count <= maxObjects || attempt == 4) {
             if (b.count > maxObjects) return Err(fmt::format("Too many objects ({}). Raise 'Max objects' in settings or decorate a selection.", b.count));
-            return commit(ed, b, marker, "Placed");
+            auto res = commit(ed, b, marker, "Placed");
+            if (res && opt.blocks) hideCoveredBlocks(ed, scan);
+            return res;
         }
         density *= 0.55f; // thin out background and particles, then try again
     }
