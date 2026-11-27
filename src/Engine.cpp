@@ -432,6 +432,13 @@ static std::vector<std::tuple<int, Rgb, float>> channelColors(Palette const& p, 
         {ch.accent, accent, 0.85f},
         {ch.accent2, accent, 0.4f},
     };
+    // Colour-trigger opacity doesn't reliably reach objects, so blend each
+    // see-through layer over the background colour ourselves and keep it opaque.
+    Rgb bg = colorOf(p, "bg");
+    for (auto& [chn, col, alpha] : out) {
+        if (alpha < 0.999f) col = mix(bg, col, alpha);
+        alpha = 1.f;
+    }
     return out;
 }
 
