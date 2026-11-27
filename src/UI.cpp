@@ -79,7 +79,7 @@ protected:
     DecoOptions m_opt;
     unsigned m_runs = 0;
 
-    bool init() {
+    bool init() override {
         if (!Popup::init(W, H)) return false;
         this->setTitle("Deco AI", "goldFont.fnt", 0.8f, 18.f);
         load();
